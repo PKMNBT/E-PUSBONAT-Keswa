@@ -180,6 +180,42 @@ footer{margin-top:0;padding:28px 25px;color:white;
  .toolbar,.actions,.editor{display:none!important}
  body{background:white}.panel{break-inside:avoid;box-shadow:none}
 }
+
+ .btn.infographic{background:linear-gradient(110deg,#08a6a4,#087e83);color:white}
+ .infographic-modal{display:none;position:fixed;inset:0;z-index:9999;background:#062f40eF;padding:14px;overflow:auto}
+ .infographic-modal.open{display:block}
+ .infographic-tools{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:8px;margin:0 auto 10px;max-width:1000px}
+ .infographic-sheet{width:min(100%,900px);margin:0 auto;background:#f2fcfc;border-radius:20px;overflow:hidden;box-shadow:0 18px 60px #001c2a66}
+ .ig-head{background:linear-gradient(115deg,#075c70,#08a6a4);color:white;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+ .ig-head h2{font-size:clamp(22px,3.2vw,36px);margin:0;line-height:1.1}.ig-head p{margin:7px 0 0;font-size:13px}.ig-month{background:#ffd34c;color:#083c4c;font-weight:900;padding:10px 15px;border-radius:12px;white-space:nowrap}
+ .ig-content{padding:16px;display:grid;gap:12px}
+ .ig-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ .ig-card{background:white;border:1px solid #c7eceb;border-radius:14px;padding:13px;box-shadow:0 4px 14px #0c74800d;min-width:0}
+ .ig-card h3{font-size:14px;margin:0 0 10px;color:#07576a}
+ .ig-big{font-size:clamp(22px,3vw,34px);font-weight:900;color:#087e83;line-height:1.15}.ig-sub{font-size:11px;color:#547482;line-height:1.5}
+ .ig-barrow{display:grid;grid-template-columns:62px 1fr 50px;align-items:center;gap:7px;margin:7px 0;font-size:10px}
+ .ig-track{height:9px;background:#e8f4f4;border-radius:99px;overflow:hidden}.ig-fill{height:100%;border-radius:99px}
+ .ig-fill.gold{background:#ffd33d}.ig-fill.green{background:#42b84a}.ig-fill.blue{background:#147fe5}.ig-fill.red{background:#ed4552}
+ .ig-lower{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:10px}
+ .ig-pill{background:#e2f9f5;border-radius:9px;padding:8px;margin-top:6px;font-size:11px;line-height:1.4}
+ .ig-banner{background:#ffd34c;color:#16384a;border-radius:9px;padding:9px;font-weight:900;text-align:center;margin-bottom:8px}
+ .ig-regions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+ .ig-region{background:#e8f9fb;border:1px solid #c5e9ec;border-radius:9px;padding:9px 4px;text-align:center;min-width:0}
+ .ig-region b{display:block;font-size:11px;overflow-wrap:anywhere}.ig-region strong{display:block;font-size:22px;color:#087e83;margin:4px 0}.ig-region small{font-size:9px}
+ .ig-total{background:#087e83;color:white;border-radius:10px;padding:10px;text-align:center;font-weight:800}
+ .ig-footer{background:#064c63;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px}
+ @media(max-width:600px){.infographic-modal{padding:5px}.ig-head{padding:16px;align-items:flex-start}.ig-content{padding:9px;gap:8px}.ig-stats{gap:6px}.ig-card{padding:8px}.ig-lower{grid-template-columns:1fr}.ig-regions{grid-template-columns:repeat(3,minmax(0,1fr))}.ig-month{padding:7px;font-size:11px}.ig-footer{flex-direction:column;align-items:flex-start}}
+ @media print{
+  body.infographic-print>*{display:none!important}
+  body.infographic-print #infographicModal{display:block!important;position:static!important;inset:auto!important;padding:0!important;background:white!important;overflow:visible!important}
+  body.infographic-print .infographic-tools{display:none!important}
+  body.infographic-print .infographic-sheet{width:100%!important;max-width:none!important;border-radius:0!important;box-shadow:none!important}
+  body.infographic-print .ig-head{padding:10mm 12mm!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.infographic-print .ig-content{padding:6mm!important;gap:4mm!important}
+  body.infographic-print .ig-card,.ig-region,.ig-banner,.ig-pill,.ig-total,.ig-footer{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4 portrait;margin:0}
+ }
+
 </style>
 </head>
 <body>
@@ -204,6 +240,7 @@ footer{margin-top:0;padding:28px 25px;color:white;
   <button class="btn secondary" onclick="exportData()">↓ EKSPOR JSON</button>
   <button class="btn secondary" onclick="document.getElementById('importFile').click()">↑ IMPOR JSON</button>
   <button class="btn secondary" onclick="window.print()">▤ CETAK</button>
+  <button class="btn infographic" onclick="openInfographic()">▧ INFOGRAFIS 1 HALAMAN</button>
   <input type="file" id="importFile" accept=".json,application/json" hidden>
  </div>
 </div>
@@ -309,6 +346,41 @@ function renderMonths(){
  `<button class="month ${m===currentMonth?"active":""}" onclick="selectMonth('${m}')">${m}</button>`
  ).join("");
 }
+
+function openInfographic(){
+ const s=data.spm, q=data.screening, b=data.bok, o=data.odgj;
+ const regions=data.regions||[];
+ const bar=(label,value,max,color)=>`<div class="ig-barrow"><span>${esc(label)}</span><div class="ig-track"><div class="ig-fill ${color}" style="width:${safePct(value,max)}%"></div></div><b>${number(value)}</b></div>`;
+ document.getElementById("infographicSheet").innerHTML=`
+ <header class="ig-head"><div><h2>DASHBOARD KESEHATAN JIWA</h2><h2 style="color:#ffdf72;font-size:clamp(17px,2.4vw,25px);margin-top:5px">PUSKESMAS NAIBONAT</h2><p>Oleh: Yeheskiel Baitanu, S.Kep., Ns.</p></div><div class="ig-month">${esc(currentMonth)}</div></header>
+ <div class="ig-content">
+  <div class="ig-stats">
+   <section class="ig-card"><h3>SPM PELAYANAN ODGJ</h3><div class="ig-big">${percent(s.achieved,s.target)}</div><div class="ig-sub">Persentase capaian</div>${bar("Target",s.target,Math.max(s.target,s.achieved,1),"gold")}${bar("Capaian",s.achieved,Math.max(s.target,s.achieved,1),"green")}<div class="ig-sub">Target: ${number(s.target)} · Capaian: ${number(s.achieved)}</div></section>
+   <section class="ig-card"><h3>SKRINING JIWA</h3><div class="ig-big">${percent(q.achieved,q.target)}</div><div class="ig-sub">Persentase capaian</div>${bar("Target",q.target,Math.max(q.target,q.achieved,1),"red")}${bar("Capaian",q.achieved,Math.max(q.target,q.achieved,1),"green")}<div class="ig-sub">Target: ${number(q.target)} · Capaian: ${number(q.achieved)}</div></section>
+   <section class="ig-card"><h3>GIAT BOK</h3><div class="ig-big">${percent(b.achieved,b.target)}</div><div class="ig-sub">Target dan capaian frekuensi</div>${bar("Target",b.target,Math.max(b.target,b.achieved,1),"gold")}${bar("Capaian",b.achieved,Math.max(b.target,b.achieved,1),"red")}<div class="ig-sub">Target: ${number(b.target)} · Capaian: ${number(b.achieved)}</div></section>
+  </div>
+  <div class="ig-lower">
+   <section class="ig-card"><h3>INFO ODGJ</h3><div class="ig-banner">TOTAL ODGJ: ${number(o.total)} ORANG</div><div class="ig-pill">ODGJB (F20): <b>${number(o.f20)}</b><br>Lain-lain: <b>${number(o.other)}</b></div><div class="ig-sub" style="margin-top:9px">ODGJ BARU BULAN ${esc(currentMonth)}: <b>${number(o.newMonth)}</b><br>Kumulatif: <b>${number(o.cumulative)}</b></div></section>
+   <section class="ig-card"><h3>KENDALA</h3>${data.challenges.map((v,i)=>`<div class="ig-pill"><b>${i+1}.</b> ${esc(v)}</div>`).join("")}</section>
+   <section class="ig-card"><h3>SOLUSI</h3>${data.solutions.map((v,i)=>`<div class="ig-pill"><b>${i+1}.</b> ${esc(v)}</div>`).join("")}</section>
+  </div>
+  <section class="ig-card"><h3>JUMLAH ODGJ BERDASARKAN WILAYAH</h3><div class="ig-regions">${regions.map(r=>`<div class="ig-region"><b>${esc(r.name)}</b><strong>${number(r.count)}</strong><small>${esc(r.code||"")}</small></div>`).join("")}<div class="ig-total">F20<br><strong style="font-size:25px">${number(o.f20)}</strong></div><div class="ig-total">TOTAL ODGJ<br><strong style="font-size:25px">${number(o.total)}</strong></div></div></section>
+ </div>
+ <footer class="ig-footer"><b>Setiap Skrining Adalah Langkah Menuju Masyarakat yang Lebih Sehat</b><span>PUSKESMAS NAIBONAT · KESEHATAN JIWA</span></footer>`;
+ document.getElementById("infographicModal").classList.add("open");
+}
+function closeInfographic(){
+ document.getElementById("infographicModal").classList.remove("open");
+ document.body.classList.remove("infographic-print");
+}
+function printInfographic(){
+ document.body.classList.add("infographic-print");
+ window.print();
+ setTimeout(()=>document.body.classList.remove("infographic-print"),700);
+}
+document.getElementById("infographicModal").addEventListener("click",e=>{if(e.target.id==="infographicModal")closeInfographic()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeInfographic()});
+
 function render(){
  renderMonths();
  const s=data.spm,sc=data.screening,b=data.bok,o=data.odgj;
