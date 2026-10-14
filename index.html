@@ -271,6 +271,16 @@ footer{margin-top:0;padding:28px 25px;color:white;
  </div>
 </footer>
 
+
+<div class="infographic-modal" id="infographicModal" role="dialog" aria-modal="true" aria-label="Infografis Dashboard Keswa">
+ <div class="infographic-tools">
+  <button class="btn primary" onclick="saveInfographicPhoto()">📷 SIMPAN FOTO PNG</button>
+  <button class="btn secondary" onclick="printInfographic()">⬇ CETAK / SIMPAN PDF</button>
+  <button class="btn secondary" onclick="closeInfographic()">✕ TUTUP</button>
+ </div>
+ <div id="infographicSheet" class="infographic-sheet"></div>
+</div>
+
 <script>
 "use strict";
 
@@ -372,6 +382,28 @@ function openInfographic(){
 function closeInfographic(){
  document.getElementById("infographicModal").classList.remove("open");
  document.body.classList.remove("infographic-print");
+}
+async function saveInfographicPhoto(){
+ const sheet=document.getElementById("infographicSheet");
+ const btn=document.querySelector(".infographic-tools button");
+ const old=btn.textContent;
+ try{
+  btn.disabled=true;btn.textContent="Menyiapkan foto…";
+  if(!window.html2canvas){
+   await new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    s.onload=resolve;s.onerror=()=>reject(new Error("Pustaka gambar tidak dapat dimuat. Periksa koneksi internet."));
+    document.head.appendChild(s);
+   });
+  }
+  const canvas=await html2canvas(sheet,{scale:2,backgroundColor:"#f2fcfc",useCORS:true,logging:false});
+  const a=document.createElement("a");
+  a.download="Infografis-Keswa-"+currentMonth+".png";
+  a.href=canvas.toDataURL("image/png");
+  a.click();
+ }catch(err){alert("Foto belum berhasil dibuat: "+err.message)}
+ finally{btn.disabled=false;btn.textContent=old}
 }
 function printInfographic(){
  document.body.classList.add("infographic-print");
